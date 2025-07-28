@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Visionary</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f9; }
+        .container { text-align: center; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        #result { margin-top: 20px; font-style: italic; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload an Image for Analysis</h1>
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="analyzeImage()">Analyze Image</button>
+        <div id="result">
+            <p>Your AI-generated caption will appear here...</p>
+        </div>
+    </div>
+
+    <script>
+    async function analyzeImage() {
+        const imageInput = document.getElementById('imageInput');
+        const resultDiv = document.getElementById('result');
+
+        // Check if a file is selected
+        if (imageInput.files.length === 0) {
+            resultDiv.innerHTML = '<p style="color: red;">Please select an image first.</p>';
+            return;
+        }
+
+        const file = imageInput.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Show a loading message
+        resultDiv.innerHTML = '<p>Analyzing, please wait...</p>';
+
+        try {
+            // Send the image to the FastAPI backend
+            const response = await fetch('/analyze/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+
+            const data = await response.json();
+            
+            // Display the caption
+            resultDiv.innerHTML = `<p><strong>Caption:</strong> ${data.caption}</p>`;
+
+        } catch (error) {
+            console.error('Error:', error);
+            resultDiv.innerHTML = '<p style="color: red;">An error occurred during analysis.</p>';
+        }
+    }
+</script>
+</body>
+</html>
