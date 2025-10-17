@@ -1,21 +1,34 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# --- STAGE 1: The "Workshop" ---
+# This is where we install all the heavy dependencies
+FROM python:3.11-slim as builder
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY ./requirements.txt /app/requirements.txt
+# Install build tools that might be needed for some libraries
+# and then install our Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
-
-# Copy the rest of the application's code into the container
+# Copy the application code
 COPY . /app
+
+# --- STAGE 2: The Final "Showroom" ---
+# This is our final, lean image. We start fresh.
+FROM python:3.11-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only the installed packages from the "workshop" stage
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+# Copy only the application code from the "workshop" stage
+COPY --from=builder /app /app
 
 # Expose the port the app runs on
 EXPOSE 8000
 
-# Command to run the application using Uvicorn
-# We use 0.0.0.0 to make it accessible from outside the container
+# Command to run the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
