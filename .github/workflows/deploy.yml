@@ -32,32 +32,33 @@ jobs:
       - name: Deploy to Private EC2 via Jump Host
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.AWS_PUBLIC_IP }}      # Public server IP (jump host)
+          # --- THE PROFESSIONAL FIX ---
+          # The "host" is now our final destination (the private server)
+          host: ${{ secrets.AWS_PRIVATE_IP_INTERNAL }}
           username: ubuntu
-          key: ${{ secrets.AWS_PRIVATE_KEY }}     # Key for public jump host
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+
+          # --- These two lines tell the action to use a jump host ---
+          proxy_host: ${{ secrets.AWS_PUBLIC_IP }}
+          proxy_key: ${{ secrets.AWS_PRIVATE_KEY }}
+          
+          # This script now runs directly on the private server
           script: |
-            # --- Prepare private key for internal server ---
-            echo "${{ secrets.AWS_PRIVATE_KEY_PRIVATE_SERVER }}" > ~/.ssh/private_key
-            chmod 600 ~/.ssh/private_key
-
-            # --- Connect to private server ---
-            ssh -i ~/.ssh/private_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_PRIVATE_IP_INTERNAL }} << 'ENDSSH'
-              echo "--- Connected to private server ---"
-
-              # Login to Docker Hub
-              echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-              # Pull latest Docker image
-              echo "--- Pulling latest image ---"
-              sudo docker pull ishanlenin/visionary-app:latest
-
-              # Stop and remove old container if exists
-              echo "--- Restarting container ---"
-              sudo docker stop visionary-container || true
-              sudo docker rm visionary-container || true
-
-              # Run new container
-              sudo docker run -d -p 8000:8000 --name visionary-container ishanlenin/visionary-app:latest
-
-              echo "--- Deployment complete! ---"
-            ENDSSH
+            echo "--- Successfully connected to private server via jump host ---"
+            
+            # Login to Docker Hub
+            echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            
+            # Pull latest Docker image
+            echo "--- Pulling latest image ---"
+            sudo docker pull ishanlenin/visionary-app:latest
+            
+            # Stop and remove old container if exists
+            echo "--- Restarting container ---"
+            sudo docker stop visionary-container || true
+            sudo docker rm visionary-container || true
+            
+            # Run new container
+            sudo docker run -d -p 8000:8000 --name visionary-container ishanlenin/visionary-app:latest
+            
+            echo "--- Deployment complete! ---"
