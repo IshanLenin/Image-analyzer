@@ -27,37 +27,37 @@ jobs:
 
   deploy-to-ec2:
     runs-on: ubuntu-latest
-    needs: build-and-push # This job will only run after the build is successful
+    needs: build-and-push
     steps:
-      - name: Deploy to Private EC2 via Jump Box
+      - name: Deploy to Private EC2 via Jump Host
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.AWS_PUBLIC_IP }} # Public server IP
+          host: ${{ secrets.AWS_PUBLIC_IP }}      # Public server IP (jump host)
           username: ubuntu
-          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          key: ${{ secrets.AWS_PRIVATE_KEY }}     # Key for public jump host
           script: |
-            # This is the magic part. We are now inside the public server.
-            # From here, we will SSH into the private server to run the deployment commands.
-            echo "--- Connecting to private server ---"
-            ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_PRIVATE_IP_INTERNAL }} << 'ENDSSH'
-              
-              # We are now inside the private server.
-              echo "--- Logged into private server ---"
-              
+            # --- Prepare private key for internal server ---
+            echo "${{ secrets.AWS_PRIVATE_KEY_PRIVATE_SERVER }}" > ~/.ssh/private_key
+            chmod 600 ~/.ssh/private_key
+
+            # --- Connect to private server ---
+            ssh -i ~/.ssh/private_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_PRIVATE_IP_INTERNAL }} << 'ENDSSH'
+              echo "--- Connected to private server ---"
+
               # Login to Docker Hub
               echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-              
-              # Pull the latest image
-              echo "--- Pulling latest Docker image ---"
+
+              # Pull latest Docker image
+              echo "--- Pulling latest image ---"
               sudo docker pull ishanlenin/visionary-app:latest
-              
-              # Stop and remove the old container if it exists
+
+              # Stop and remove old container if exists
               echo "--- Restarting container ---"
               sudo docker stop visionary-container || true
               sudo docker rm visionary-container || true
-              
-              # Run the new container
+
+              # Run new container
               sudo docker run -d -p 8000:8000 --name visionary-container ishanlenin/visionary-app:latest
-              
-              echo "--- Deployment to private server complete! ---"
+
+              echo "--- Deployment complete! ---"
             ENDSSH
