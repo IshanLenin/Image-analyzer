@@ -1,67 +1,89 @@
-# Project Visionary: AI Image Analysis Platform 📸
+**Secure Cloud Architecture on AWS**
 
-Project Visionary is a full-stack web application that allows users to upload an image and receive an AI-generated caption describing it. The entire application is containerized with Docker and deployed on a cloud server.
+A multi-tier cloud application demonstrating secure infrastructure design, Docker-based deployment, and production-grade network isolation using AWS VPCs, Nginx, and FastAPI.
 
-**Live Application:** [https://ishan-visionary.tech](https://ishan-visionary.tech)
+**🧠 Overview**
 
----
+This project showcases how to design and deploy a secure, scalable cloud application following AWS best practices.
+It uses a public subnet for the reverse proxy (Nginx) and a private subnet for the backend application (FastAPI) — ensuring that sensitive workloads are not directly exposed to the internet.
 
-## Core Technologies
+**🏗️ Architecture**
 
-* **Backend:** Python, FastAPI
-* **AI Model:** Hugging Face Transformers (`Salesforce/blip-image-captioning-large`)
-* **Frontend:** HTML, CSS, Vanilla JavaScript
-* **Containerization:** Docker
-* **Cloud Hosting:** DigitalOcean Droplet
-* **Web Server / Reverse Proxy:** Nginx
-* **Security:** Let's Encrypt (for HTTPS/SSL)
+                +-----------------------------+
+                |        Internet              |
+                +---------------+--------------+
+                                |
+                                v
+                    +----------------------+
+                    |   Public Subnet      |
+                    |  (Nginx Reverse Proxy)|
+                    +----------+-----------+
+                               |
+                               v
+                    +----------------------+
+                    |   Private Subnet     |
+                    |  (FastAPI + Docker)  |
+                    +----------------------+
+                               |
+                               v
+                    +----------------------+
+                    |   PostgreSQL (RDS)   |
+                    |   Private Network    |
+                    +----------------------+
 
----
+**🚀 Features**
 
-## How It Works
+🔐 Custom AWS VPC with public and private subnets
 
-1.  A user selects an image on the web interface and clicks "Analyze."
-2.  The frontend sends the image to the FastAPI backend.
-3.  The backend uses a pre-trained computer vision model from the Hugging Face `transformers` library to generate a descriptive caption.
-4.  The API returns the caption as a JSON response.
-5.  The frontend displays the returned caption to the user.
+🌐 Nginx reverse proxy routing HTTPS traffic to the backend
 
----
+🐳 Containerized backend using Docker
 
-## Local Development Setup
+⚙️ Security groups restricting access between tiers
 
-To run this project on your local machine:
+📜 SSL certificates issued via Let’s Encrypt (Certbot)
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/YourUsername/project-visionary.git](https://github.com/YourUsername/project-visionary.git)
-    cd project-visionary
-    ```
-2.  **Create a virtual environment and install dependencies:**
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
-    pip install -r requirements.txt
-    ```
-3.  **Run the application:**
-    ```bash
-    uvicorn main:app --reload
-    ```
-4.  Open your browser and navigate to `http://localhost:8000`.
+🧱 Deployed on AWS EC2 (Ubuntu) following cloud security best practices
 
----
 
-## Deployment
+**🧰 Tech Stack**
 
-This application is deployed on a DigitalOcean Droplet using Docker.
+Cloud: AWS (EC2, VPC, Security Groups)
+Backend: FastAPI
+Proxy: Nginx
+Containerization: Docker
+SSL: Certbot (Let’s Encrypt)
+OS: Ubuntu 24.04
 
-1.  **Build the Docker Image:**
-    ```bash
-    docker build -t visionary-app .
-    ```
-2.  **Run the Docker Container:**
-    ```bash
-    docker run -d -p 8000:8000 visionary-app
-    ```
-3.  **Nginx Configuration:** Nginx is used as a reverse proxy to handle incoming traffic on port 80 and forward it to the application running on port 8000.
-4.  **HTTPS:** Certbot is used to automatically provision and renew a free SSL certificate from Let's Encrypt, enabling secure `https` traffic.
+**🧾 Deployment Overview**
+
+1. Create a custom VPC with public and private subnets.
+
+2. Deploy Nginx as a reverse proxy in the public subnet.
+
+3. Deploy the FastAPI backend in the private subnet.
+
+4. Configure security groups for strict access control.
+
+5. Obtain and install SSL certificate using Certbot.
+
+6. Verify HTTPS access at: https://ishan-visionary.tech
+
+
+**🧠 Key Learning Outcomes**
+
+Hands-on experience with secure cloud architecture principles.
+
+Understanding of reverse proxying, subnets, and SSL configuration.
+
+Real-world application of network isolation and access control.
+
+
+**🌐 Live Demo**
+👉 https://ishan-visionary.tech
+
+**💻 Repository**
+📂 GitHub Repository (https://github.com/IshanLenin/Image-analyzer)
+
+
+
