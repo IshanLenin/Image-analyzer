@@ -82,8 +82,9 @@ Real-world application of network isolation and access control.
 **🌐 Live Demo**
 👉 https://ishan-visionary.tech
 
-**💻 Repository**
-📂 [GitHub Repository] (https://github.com/IshanLenin/Image-analyzer)
+**💻 Repository 📂**
+[GitHub Repository](https://github.com/IshanLenin/Image-analyzer)
+
 
 
 
